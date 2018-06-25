@@ -1,0 +1,217 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>timeUnit</title>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="shortcut icon" href="https://nebulas.io/assets/images/logo.png" type="image/x-icon">
+		<script src=nebPay.js></script>
+		<script src=nebulas.js></script>
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.scrolly.min.js"></script>
+		<script src="assets/js/jquery.poptrox.min.js"></script>
+		<script src="assets/js/skel.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+	</head>
+	<body>
+		<div id="page-wrapper">
+		<!-- Header -->
+			<section id="header">
+				<header>
+					<h1>timeUnit</h1>
+					<p>To change units of time</p>
+				</header>
+				<footer>
+					<a href="#banner" class="button style2 scrolly-middle">What is this?</a>
+				</footer>
+			</section>
+
+		<!-- Banner -->
+			<section id="banner">
+				<header>
+					<h2>This is timeUnit</h2>
+				</header>
+				<p>A calculator of units of time, <p>
+					<p>you can transform between seconds,<p>
+						<p>minutes, hours and days<p>
+						 <p>in just one step.</p>
+				<footer>
+					<a href="#calculate" class="button style2 scrolly">	Let's try it</a>
+				</footer>
+			</section>
+
+
+		<!-- Contact -->
+			<section id="main" class="container box style3">
+				<header id=main_one>
+					<script>
+						if(window.location.href.indexOf("txhash=") != -1){
+							document.getElementById("main_one").style.display = "none";
+							document.getElementById("t_request").style.display = "block";
+						}
+					</script>
+					<h2>follow the instructions below</h2>
+					<p id=calculate>In the "given unit" you have to put the unit
+						<br>you want to transfom (for example, hours).
+						<br>The next step, "the given number",
+							<br>now insert the amount to change (for example, 10).
+							<br>Finally, in "wanted unit" just put the unit
+								<br>requiered (for example seconds).</p>
+								<br>
+				<form method="post" action="#">
+					<div class="row 50%">
+						<div class="6u 12u$(mobile)"><input type="text" class="text" id=new_request_gunit placeholder="Given unit " /></div>
+						<div class="6u$ 12u$(mobile)"><input type="text" class="text" id=new_request_wunit placeholder="Wanted unit" /></div>
+						<div class="6u$ 12u$(mobile)"><input type="text" class="number" id=new_request_gnumber placeholder="Given number" /></div>
+						<footer>
+							<a href="#calculate" class="button circled scrolly" onclick="javascript:onClickRequesttimeUnit()">Calculate</a>
+						</footer>
+					</div>
+				</form>
+			</header>
+
+			<header id=t_request_pending style="display:none;">
+					<script>
+						if(window.location.href.indexOf("txhash=") == -1){
+							document.getElementById("t_request").style.display = "none";
+						}
+					</script>
+					<script>
+					if(window.location.href.indexOf("txhash=") != -1){
+						document.getElementById("t_request_pending").style.display = "block";
+					}
+					</script>
+					<h2>Processing</h2>
+					<br>
+						<div class="loader"></div>
+						<br>
+						<p>Waiting for the transaction to be confirmed by Nebulas Blockchain.</p>
+						<footer>
+							<a href="#t_request_pending" class="button circled scrolly" onclick="javascript:onClickRefresh()">Refresh</a>
+						</footer>
+			</header>
+			<header id=t_request>
+					<h1 class="animated fadeInDown">Your <span>timeUnit is</span></h1>
+
+								<b><h1 class="animated fadeInDown delay-05s"><span id=t_request_wnumber></span></h1></b>
+
+								<p class="animated fadeInUp delay-1s">timeUnit shown at <span id=t_request_date></span>.
+								<br><br><a id="viewTx" href="#">View Transaction</a> as Proof on the Block Explorer.</p>
+								<footer>
+									<a href="index.html" class="button circled scrolly" onclick="javascript:onClickRefresh()">Go home</a>
+								</footer>
+			</header>
+		</section>
+				<!-- Script of Index -->
+				<script src=timeUnit.js></script>
+				<script>
+						"use strict";
+
+						var NebPay = require("nebpay");
+						var nebPay = new NebPay();
+
+						function onClickRequesttimeUnit() {
+								var gunit = $("#new_request_gunit").val();
+								var gnumber = parseInt($("#new_request_gnumber").val());
+								var wunit = $("#new_request_wunit").val();
+
+
+								nebPay.call(contract_address, 0, "requesttimeUnit", JSON.stringify([gunit,gnumber,wunit]), {
+										listener: onRequesttimeUnit
+								});
+						}
+
+						function onRequesttimeUnit(resp) {
+								if(typeof(resp)==='string' && resp.startsWith("Error")) {
+										throw new Error(resp);
+								}
+								if (history.pushState) {
+									var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?txhash=' + resp.txhash;
+									window.history.pushState({path:newurl},'',newurl);
+									$("#main_one").hide();
+									$("#t_request_pending").show();
+								}
+						}
+
+						//to check if the extension is installed
+						//if the extension is installed, var "webExtensionWallet" will be injected in to web page
+						if(typeof(webExtensionWallet) === "undefined"){
+								alert ("Extension wallet is not installed, redirecting you to more information.");
+								var href = window.location.href;
+								var dir = href.substring(0, href.lastIndexOf('/')) + "/";
+								window.location =  dir + 'about.html';
+						}
+				</script>
+				<!-- Script of Results -->
+				<script src=timeUnit.js></script>
+				<script>
+						"use strict";
+
+						$("#viewTx").attr('href', "https://explorer.nebulas.io/#/tx/" + window.location.search.substr(8));
+						$("#t_request").hide();
+
+						// Gas hard coded for simplicity, ideally your app would allow for changing the gas price, etc.
+						var is_mainnet = true;
+						var nebulas_chain_id, nebulas_domain;
+						var gas_price = 1000000;
+						var gas_limit = 200000;
+
+						if(is_mainnet) {
+								nebulas_chain_id = 1;
+								nebulas_domain = "https://mainnet.nebulas.io";
+						} else {
+								nebulas_chain_id = 1001;
+								nebulas_domain = "https://testnet.nebulas.io";
+						}
+
+						// The nebulas API, used for signing transactions, etc
+						var nebulas = require("nebulas");
+						var neb = new nebulas.Neb();
+						neb.setRequest(new nebulas.HttpRequest(nebulas_domain));
+
+						// Called by the Refresh button and auto-called every few seconds
+						function onClickRefresh() {
+								neb.api.call({
+										from: contract_address, // Using the contract here so this can be called without loggin on.
+										to: contract_address,
+										value: 0,
+										nonce: 0, // Nonce is irrelavant when read-only (there is no transaction charge)
+										gasPrice: gas_price,
+										gasLimit: gas_limit,
+										contract: {function: "gettimeUnit", args: JSON.stringify([window.location.search.substr(8)])} //?txhash=
+								}).then(function (resp) {
+										var response = JSON.parse(resp.result);
+										if(response) {
+												$("#t_request").show();
+												$("#t_request_pending").hide();
+
+												$("#t_request_wnumber").text(response.wnumber);
+												$("#t_request_wunit").text(response.wunit);
+												$("#t_request_date").text(new Date(response.date));
+										} else {
+												setTimeout(onClickRefresh, 3000); // Auto-refresh every few seconds
+										}
+								});
+						}
+
+						onClickRefresh();
+				</script>
+
+		<section id="footer">
+			<br>
+			<div class="copyright">
+				<ul class="menu">
+					<p>Contact:   <p>saradiamanzano@gmail.com<p>
+					<li>&copy; timeUnit. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+				</ul>
+			</div>
+		</section>
+		</div>
+	</body>
+</html>
